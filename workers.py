@@ -1,7 +1,8 @@
-import requests
 import json
-import time
 import os
+import time
+
+import requests
 
 
 class PageToJsonFile:
@@ -13,7 +14,9 @@ class PageToJsonFile:
         self.data_url_json(page)
 
     def data_url_json(self, page: int) -> None:
-        response = requests.get(url=f"https://jsonplaceholder.typicode.com/posts/{page}").json()
+        response = requests.get(
+            url=f"https://jsonplaceholder.typicode.com/posts/{page}"
+        ).json()
         file_name = f"post_{page}"
         way = os.getcwd()
         self.write_to_json(data=response, way=way, file_name=file_name)

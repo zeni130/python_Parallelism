@@ -28,4 +28,7 @@ ______
 
 ______
 
-
+### Run comparison script:
+````
+python console_test.py
+````
