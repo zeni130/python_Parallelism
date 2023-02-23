@@ -1,39 +1,11 @@
-import json
-import os
 import time
 
-import requests
-
-from adapters import (m_multiprocessing, m_multiprocessing_pool,
-                      m_successively, m_threading, m_threading_amount_thr,
-                      m_threading_semaphore)
-
-
-class PageToJsonFile:
-    def __init__(self, delay: float):
-        self.delay = delay
-
-    def __call__(self, page: int):
-        self.page = page
-        self.data_url_json(page)
-
-    def data_url_json(self, page: int) -> None:
-        response = requests.get(
-            url=f"https://jsonplaceholder.typicode.com/posts/{page}"
-        ).json()
-        file_name = f"post_{page}"
-        way = os.getcwd()
-        self.write_to_json(data=response, way=way, file_name=file_name)
-
-        time.sleep(self.delay)
-
-    @staticmethod
-    def write_to_json(data: dict, way: str, file_name: str) -> None:
-        if not os.path.isdir(f"{way}/data_files"):
-            os.mkdir(f"{way}/data_files")
-
-        with open(f"{way}/data_files/{file_name}", "w") as outfile:
-            json.dump(data, outfile)
+from adapters.m_multiprocessing import multiprocessing_def_run
+from adapters.m_multiprocessing_pool import multiprocessing_pool_run
+from adapters.m_successively import run_suc
+from adapters.m_threading import run_thr
+from adapters.m_threading_amount_thr import run_thr_def
+from adapters.m_threading_semaphore import run_thr_sem
 
 
 class TestPool:
@@ -44,73 +16,87 @@ class TestPool:
         self.amount_parallel = amount_parallel
 
     def result_successively(self) -> None:
-        print(f"=> Working time successively ↓")
+        print("\033[34m{}".format("\n=> Working time successively ↓"))
+        print("Num page ==> ", end="")
         t_start = time.time()
-        m_successively.run_suc(
-            num_pages=self.num_pages, page_to_jsonfile=self.page_to_jsonfile
-        )
+        run_suc(num_pages=self.num_pages, page_to_json=self.page_to_jsonfile)
         t_end = time.time()
-        print(f"==> work_time_suc: {t_end - t_start}")
+        print("\033[34m{}".format(f"\n===> work_time_suc: {t_end - t_start}"))
         time.sleep(self.delay)
 
     def result_threading_unlimited(self) -> None:
-        print(f"=> Working time Threading no flow limit ↓")
+        print("\033[34m{}".format(f"\n=> Working time Threading, {self.num_pages} threads ↓"))
+        print("Num page ==> ", end="")
         t_start = time.time()
-        m_threading.run_thr(
-            num_pages=self.num_pages, page_to_jsonfile=self.page_to_jsonfile
-        )
+        run_thr(num_pages=self.num_pages, page_to_json=self.page_to_jsonfile)
         t_end = time.time()
-        print(f"==> work_time_thr: {t_end - t_start}")
+        print("\033[34m{}".format(f"\n===> work_time_thr: {t_end - t_start}"))
         time.sleep(self.delay)
 
     def result_threading(self) -> None:
-        print(f"=> Working time Threading, {self.amount_parallel} threads ↓")
+        print(
+            "\033[34m{}".format(
+                f"\n=> Working time Threading, {self.amount_parallel} threads ↓"
+            )
+        )
+        print("Num page ==> ", end="")
         t_start = time.time()
-        m_threading_amount_thr.run_thr(
+        run_thr_def(
             num_pages=self.num_pages,
             count_thr=self.amount_parallel,
-            page_to_jsonfile=self.page_to_jsonfile,
+            page_to_json=self.page_to_jsonfile,
         )
         t_end = time.time()
-        print(f"==> work_time_thr: {t_end - t_start}")
+        print("\033[34m{}".format(f"\n===> work_time_thr: {t_end - t_start}"))
         time.sleep(self.delay)
 
     def result_threading_semaphore(self) -> None:
         print(
-            f"=> Working time Threading with semaphore, {self.amount_parallel} threads ↓"
+            "\033[34m{}".format(
+                f"\n=> Working time Threading with semaphore, {self.amount_parallel} threads ↓"
+            )
         )
+        print("Num page ==> ", end="")
         t_start = time.time()
-        m_threading_semaphore.run_thr(
+        run_thr_sem(
             num_pages=self.num_pages,
             count_thr=self.amount_parallel,
-            page_to_jsonfile=self.page_to_jsonfile,
+            page_to_json=self.page_to_jsonfile,
         )
         t_end = time.time()
-        print(f"==> work_time_thr_semaphore: {t_end - t_start}")
+        print("\033[34m{}".format(f"\n===> work_time_thr_semaphore: {t_end - t_start}"))
         time.sleep(self.delay)
 
     def result_multiprocessing(self) -> None:
-        print(f"=> Working time Multiprocessing, {self.amount_parallel} processes ↓")
+        print(
+            "\033[34m{}".format(
+                f"\n=> Working time Multiprocessing, {self.num_pages} processes ↓"
+            )
+        )
+        print("Num page ==> ", end="")
         t_start = time.time()
-        m_multiprocessing.run(
+        multiprocessing_def_run(
             num_pages=self.num_pages,
             count_proc=self.amount_parallel,
-            page_to_jsonfile=self.page_to_jsonfile,
+            page_to_json=self.page_to_jsonfile,
         )
         t_end = time.time()
-        print(f"==> work_time_multiproc: {t_end - t_start}")
+        print("\033[34m{}".format(f"\n===> work_time_multiproc: {t_end - t_start}"))
         time.sleep(self.delay)
 
     def result_multiprocessing_pool(self) -> None:
         print(
-            f"=> Working time Multiprocessing pool, {self.amount_parallel} processes ↓"
+            "\033[34m{}".format(
+                f"\n=> Working time Multiprocessing pool, {self.amount_parallel} processes ↓"
+            )
         )
+        print("Num page ==> ", end="")
         t_start = time.time()
-        m_multiprocessing_pool.run(
+        multiprocessing_pool_run(
             num_pages=self.num_pages,
             count_proc=self.amount_parallel,
-            page_to_jsonfile=self.page_to_jsonfile,
+            page_to_json=self.page_to_jsonfile,
         )
         t_end = time.time()
-        print(f"==> work_time_multiproc_pool: {t_end - t_start}")
+        print("\033[34m{}".format(f"\n===> work_time_multiproc_pool: {t_end - t_start}"))
         time.sleep(self.delay)
